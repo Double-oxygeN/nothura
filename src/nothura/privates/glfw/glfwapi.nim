@@ -234,15 +234,17 @@ type
     glfwRefreshRate             = 0x0002_100F
     glfwDoubleBuffer            = 0x0002_1010
     glfwClientApi               = 0x0002_2001
-    glfwContextCreationApi      = 0x0002_2002
-    glfwContextVersionMajor     = 0x0002_2003
-    glfwContextVersionMinor     = 0x0002_2004
+    glfwContextVersionMajor     = 0x0002_2002
+    glfwContextVersionMinor     = 0x0002_2003
+    glfwContextVersionRevision  = 0x0002_2004
     glfwContextRobustness       = 0x0002_2005
     glfwOpenglForwardCompat     = 0x0002_2006
     glfwOpenglDebugContext      = 0x0002_2007
     glfwOpenglProfile           = 0x0002_2008
     glfwContextReleaseBehavior  = 0x0002_2009
-
+    glfwContextNoError          = 0x0002_200A
+    glfwContextCreationApi      = 0x0002_200B
+    glfwScaleToMonitor          = 0x0002_200C
     glfwCocoaRetinaFrameBuffer  = 0x0002_3001
     glfwCocoaFrameName          = 0x0002_3002
     glfwCocoaGraphicsSwitching  = 0x0002_3003
@@ -511,6 +513,8 @@ when isMainModule:
 
   glfwWindowHint(glfwContextVersionMajor, 3)
   glfwWindowHint(glfwContextVersionMinor, 3)
+  glfwWindowHint(glfwOpenglForwardCompat, glfwTrue.cint)
+  glfwWindowHint(glfwOpenglProfile, glfwOpenglCoreProfile)
   glfwWindowHint(glfwSamples, 4)
   glfwWindowHint(glfwDoubleBuffer, glfwTrue.cint)
 
