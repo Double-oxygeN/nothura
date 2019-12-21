@@ -249,6 +249,21 @@ type
     glfwX11ClassName            = 0x0002_4001
     glfwX11InstanceName         = 0x0002_4002
 
+  GlfwClientApi* {.size: sizeof(cint).} = enum
+    glfwNoApi       = 0
+    glfwOpenglApi   = 0x0003_0001
+    glfwOpenglEsApi = 0x0003_0002
+
+  GlfwRobustnessStrategy* {.size: sizeof(cint).} = enum
+    glfwNoRobustness        = 0
+    glfwNoResetNotification = 0x0003_1001
+    glfwLoseContextOnReset  = 0x0003_1002
+
+  GlfwOpenglProfile* {.size: sizeof(cint).} = enum
+    glfwOpenglAnyProfile    = 0
+    glfwOpenglCoreProfile   = 0x0003_2001
+    glfwOpenglCompatProfile = 0x0003_2002
+
   GlfwInputMode* {.size: sizeof(cint).} = enum
     glfwCursor              = 0x0003_3001
     glfwStickyKeys          = 0x0003_3002
@@ -281,7 +296,7 @@ type
   GlfwJoystickId* = cint
   GlfwScancode* = cint
 
-  GlfwGLProc* = (proc {.cdecl.})
+  GlfwGLProc* = (proc () {.cdecl.})
   GlfwMonitor* = distinct pointer
   GlfwWindow* = distinct pointer
   GlfwCursor* = distinct pointer
@@ -334,6 +349,9 @@ const
   glfwDontCare* = -1
 
 converter toBool*(b: GlfwBool): bool = (b == glfwTrue)
+converter toCint*(x: GlfwClientApi): cint = cint(x)
+converter toCint*(x: GlfwRobustnessStrategy): cint = cint(x)
+converter toCint*(x: GlfwOpenGLProfile): cint = cint(x)
 
 proc isNil*(window: GlfwWindow): bool {.borrow.}
 proc isNil*(window: GlfwMonitor): bool {.borrow.}
@@ -466,11 +484,15 @@ proc glfwGetProcAddress*(procname: cstring): GlfwGLProc {.libglfw, cdecl.}
 # ====== End: Procs ======
 
 when isMainModule:
+  import ../glad/gl
   echo "Start GLFW API test"
   echo ord(glfwKeySpace)
   if not glfwInit():
     echo "GLFW: Initialization failed!"
     quit QuitFailure
+
+  discard glfwSetErrorCallback do (error: GlfwErrorCode; description: cstring) {.cdecl.}:
+    stderr.writeLine $description
 
   var monitorCount: int
   let monitors = glfwGetMonitors(addr monitorCount)
@@ -487,19 +509,33 @@ when isMainModule:
       echo "  RGB bits: ", vidmode.redBits, ", ", vidmode.greenBits, ", ", vidmode.blueBits
       echo "  refresh rate: ", vidmode.refreshRate
 
+  glfwWindowHint(glfwContextVersionMajor, 3)
+  glfwWindowHint(glfwContextVersionMinor, 3)
+  glfwWindowHint(glfwSamples, 4)
+  glfwWindowHint(glfwDoubleBuffer, glfwTrue.cint)
+
   let window = glfwCreateWindow(800, 600, "Hello, World!", nil, nil)
   if window.isNil:
     glfwTerminate()
     quit QuitFailure
 
   glfwMakeContextCurrent(window)
+  if not gladLoadGL(glfwGetProcAddress):
+    stderr.writeLine "Could not load OpenGL!"
+    glfwTerminate()
+    quit QuitFailure
+  glfwSwapInterval(1)
 
   discard window.glfwSetKeyCallback do (window: auto; key: auto; scancode: auto; action: auto; mods: auto) {.cdecl.}:
     if key == glfwKeyQ and action == glfwPress and mods.contains(glfwModShift):
       window.glfwSetWindowShouldClose(glfwTrue)
 
+  glClearColor(0.4, 0.8, 1.0, 1.0) # color #66CCFF
+
   while not window.glfwWindowShouldClose:
-    window.glfwSwapBuffers
+    glClear(GlColorBufferBit)
+
+    window.glfwSwapBuffers()
 
     glfwPollEvents()
 
