@@ -21,7 +21,7 @@ const
 {.deadCodeElim: on.}
 
 when defined(windows):
-  {.passL: "-lglfw3".}
+  {.passL: "-lglfw3 -lgdi32".}
 
 when defined(macosx):
   {.passL: "-lglfw3 -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo".}
