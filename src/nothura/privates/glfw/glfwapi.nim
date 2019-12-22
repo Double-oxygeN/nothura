@@ -27,7 +27,7 @@ when defined(macosx):
   {.passL: "-lglfw3 -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo".}
 
 else:
-  discard
+  {.passL: "-lglfw".}
 
 # ====== End: Library loading configurations ======
 
